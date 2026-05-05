@@ -6,7 +6,7 @@
 **So that** I can access my personalized dashboard  
 
 ## Details and Assumptions
-* Users must register before logging in  
+* Users must have a registered account before logging in  
 * Authentication uses email and password  
 * Secure session or token-based authentication is implemented  
 
@@ -23,8 +23,8 @@ Then an error message "Invalid email or password" should be displayed
 
 Given the user leaves the email or password field empty  
 When the user submits the login form  
-Then validation messages should be shown indicating required fields  
+Then validation messages should be displayed for required fields  
 
-Given the user is successfully logged in  
+Given the user is logged in  
 When the user refreshes the page  
-Then the session should persist and the user remains logged in  
+Then the user should remain logged in and stay on the dashboard  
