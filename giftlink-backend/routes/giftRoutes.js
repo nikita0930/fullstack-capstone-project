@@ -34,8 +34,8 @@ router.get('/:id', async (req, res) => {
 
         const id = req.params.id;
 
-        // Task 3: Find a specific gift by ID
-        const gift = await collection.findOne({ id: parseInt(id) });
+        // Task 3: Find a specific gift by ID using the collection.findOne method
+        const gift = await collection.findOne({ id: id });
 
         if (!gift) {
             return res.status(404).send('Gift not found');
