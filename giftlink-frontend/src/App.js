@@ -4,6 +4,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import MainPage from './components/MainPage/MainPage';
 import LoginPage from './components/LoginPage/LoginPage';
 import RegisterPage from './components/RegisterPage/RegisterPage';
+import SearchPage from './components/SearchPage/SearchPage';   // ✅ ADD THIS
 
 import Navbar from './components/Navbar/Navbar';
 
@@ -26,6 +27,9 @@ function App() {
         {/* Auth Routes */}
         <Route path="/app/login" element={<LoginPage />} />
         <Route path="/app/register" element={<RegisterPage />} />
+
+        {/* Search Route */}
+        <Route path="/app/search" element={<SearchPage />} />
       </Routes>
 
     </>
