@@ -1,20 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import './RegisterPage.css';
 
 function RegisterPage() {
+
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const { setIsAuthenticated, setUser } = useContext(AuthContext);
+
+    const navigate = useNavigate();
+
     const handleRegister = async () => {
+
         console.log("Register invoked");
 
         try {
+
+            // Step 1: Implement API call
             const response = await fetch('http://localhost:3060/api/register', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer token'
                 },
                 body: JSON.stringify({
                     firstName,
@@ -26,29 +37,55 @@ function RegisterPage() {
 
             const data = await response.json();
 
+            // Step 2: Access data, login, set AuthContext and set user details
             if (response.ok) {
+
                 alert('Registration successful!');
+
                 console.log(data);
+
+                // Save token in localStorage
+                localStorage.setItem('token', data.token);
+
+                // Save user data
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                // Update AuthContext
+                setIsAuthenticated(true);
+
+                setUser(data.user);
 
                 // Clear form fields
                 setFirstName('');
                 setLastName('');
                 setEmail('');
                 setPassword('');
+
+                // Redirect to home page
+                navigate('/');
+
             } else {
+
                 alert(data.message || 'Registration failed');
+
             }
 
         } catch (error) {
+
             console.error('Error during registration:', error);
+
             alert('Something went wrong!');
+
         }
     };
 
     return (
         <div className="container mt-5">
+
             <div className="row justify-content-center">
+
                 <div className="col-md-6 col-lg-4">
+
                     <div className="register-card p-4 border rounded">
 
                         <h2 className="text-center mb-4 font-weight-bold">
@@ -57,6 +94,7 @@ function RegisterPage() {
 
                         {/* First Name */}
                         <div className="mb-3">
+
                             <label htmlFor="firstName" className="form-label">
                                 First Name
                             </label>
@@ -69,10 +107,12 @@ function RegisterPage() {
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                             />
+
                         </div>
 
                         {/* Last Name */}
                         <div className="mb-3">
+
                             <label htmlFor="lastName" className="form-label">
                                 Last Name
                             </label>
@@ -85,10 +125,12 @@ function RegisterPage() {
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                             />
+
                         </div>
 
                         {/* Email */}
                         <div className="mb-3">
+
                             <label htmlFor="email" className="form-label">
                                 Email
                             </label>
@@ -101,10 +143,12 @@ function RegisterPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                             />
+
                         </div>
 
                         {/* Password */}
                         <div className="mb-4">
+
                             <label htmlFor="password" className="form-label">
                                 Password
                             </label>
@@ -117,6 +161,7 @@ function RegisterPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
+
                         </div>
 
                         {/* Register Button */}
@@ -128,15 +173,21 @@ function RegisterPage() {
                         </button>
 
                         <p className="mt-4 text-center">
+
                             Already a member?{' '}
+
                             <a href="/app/login" className="text-primary">
                                 Login
                             </a>
+
                         </p>
 
                     </div>
+
                 </div>
+
             </div>
+
         </div>
     );
 }
