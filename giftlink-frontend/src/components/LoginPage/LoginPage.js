@@ -1,118 +1,92 @@
-import React, { useState } from 'react';
-import './LoginPage.css';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Task 3
+import { urlConfig } from '../../config'; // Task 1
+import { useAppContext } from '../../context/AuthContext'; // Task 2
 
-function LoginPage() {
+export default function LoginPage() {
 
-    // State variables
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    // Handle login function
-    const handleLogin = async () => {
-        console.log("Inside handleLogin");
-        console.log("Email:", email);
-        console.log("Password:", password);
+    // Task 4
+    const [incorrect, setIncorrect] = useState('');
 
+    // Task 5
+    const navigate = useNavigate();
+    const bearerToken = sessionStorage.getItem('bearer-token');
+    const { setIsLoggedIn } = useAppContext();
+
+    // Task 6
+    useEffect(() => {
+        if (sessionStorage.getItem('auth-token')) {
+            navigate('/app');
+        }
+    }, [navigate]);
+
+    const handleLogin = async () => {
         try {
 
-            // Basic auth token
-            const token = btoa(`${email}:${password}`);
-
-            const response = await fetch('http://localhost:3060/api/login', {
+            const response = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
+                
+                // Task 7
                 method: 'POST',
+
+                // Task 8
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Basic ${token}`
+                    'content-type': 'application/json',
+                    'Authorization': bearerToken
+                        ? `Bearer ${bearerToken}`
+                        : '',
                 },
+
+                // Task 9
                 body: JSON.stringify({
-                    email,
-                    password
-                })
+                    email: email,
+                    password: password,
+                }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                alert('Login successful!');
-                console.log(data);
+                sessionStorage.setItem('auth-token', data.token);
+                sessionStorage.setItem('user', JSON.stringify(data.user));
 
-                // Optional: store token
-                if (data.token) {
-                    localStorage.setItem('token', data.token);
-                }
+                setIsLoggedIn(true);
 
+                navigate('/app');
             } else {
-                alert(data.message || 'Login failed');
+                setIncorrect('Incorrect email or password');
             }
 
-        } catch (error) {
-            console.error('Error during login:', error);
-            alert('Something went wrong!');
+        } catch (e) {
+            console.log("Error fetching details: " + e.message);
         }
     };
 
     return (
-        <div className="container mt-5">
-            <div className="row justify-content-center">
-                <div className="col-md-6 col-lg-4">
-                    <div className="login-card p-4 border rounded">
+        <div>
+            <h2>Login Page</h2>
 
-                        <h2 className="text-center mb-4 font-weight-bold">
-                            Login
-                        </h2>
+            <input
+                type="email"
+                placeholder="Enter Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
 
-                        {/* Email */}
-                        <div className="mb-3">
-                            <label htmlFor="email" className="form-label">
-                                Email
-                            </label>
+            <input
+                type="password"
+                placeholder="Enter Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+            />
 
-                            <input
-                                id="email"
-                                type="email"
-                                className="form-control"
-                                placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
+            <button onClick={handleLogin}>
+                Login
+            </button>
 
-                        {/* Password */}
-                        <div className="mb-4">
-                            <label htmlFor="password" className="form-label">
-                                Password
-                            </label>
-
-                            <input
-                                id="password"
-                                type="password"
-                                className="form-control"
-                                placeholder="Enter your password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Login Button */}
-                        <button
-                            className="btn btn-primary w-100 mb-3"
-                            onClick={handleLogin}
-                        >
-                            Login
-                        </button>
-
-                        <p className="mt-4 text-center">
-                            New here?{" "}
-                            <a href="/app/register" className="text-primary">
-                                Register Here
-                            </a>
-                        </p>
-
-                    </div>
-                </div>
-            </div>
+            {incorrect && <p>{incorrect}</p>}
         </div>
     );
 }
-
-export default LoginPage;
