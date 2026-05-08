@@ -1,7 +1,14 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState } from 'react';
 import './RegisterPage.css';
+
+// Import urlConfig
+import { urlConfig } from '../../config';
+
+// Import useAppContext
+import { useAppContext } from '../../context/AuthContext';
+
+// Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
 function RegisterPage() {
 
@@ -10,76 +17,92 @@ function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const { setIsAuthenticated, setUser } = useContext(AuthContext);
+    // Error message state
+    const [showerr, setShowerr] = useState('');
 
+    // navigate and setIsLoggedIn
     const navigate = useNavigate();
+    const { setIsLoggedIn } = useAppContext();
 
     const handleRegister = async () => {
 
-        console.log("Register invoked");
-
         try {
 
-            // Step 1: Implement API call
-            const response = await fetch('http://localhost:3060/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer token'
-                },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    email,
-                    password
-                })
-            });
+            const response = await fetch(
+                `${urlConfig.backendUrl}/api/auth/register`,
+                {
 
-            const data = await response.json();
+                    // POST method
+                    method: 'POST',
 
-            // Step 2: Access data, login, set AuthContext and set user details
-            if (response.ok) {
+                    // Headers
+                    headers: {
+                        'content-type': 'application/json',
+                    },
 
-                alert('Registration successful!');
+                    // Body
+                    body: JSON.stringify({
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        password: password
+                    })
 
-                console.log(data);
+                }
+            );
 
-                // Save token in localStorage
-                localStorage.setItem('token', data.token);
+            // Task 1: Access data coming from fetch API
+            const json = await response.json();
 
-                // Save user data
-                localStorage.setItem('user', JSON.stringify(data.user));
+            // Task 2: Set user details
+            if (json.authtoken) {
 
-                // Update AuthContext
-                setIsAuthenticated(true);
+                sessionStorage.setItem(
+                    'auth-token',
+                    json.authtoken
+                );
 
-                setUser(data.user);
+                sessionStorage.setItem(
+                    'name',
+                    firstName
+                );
 
-                // Clear form fields
-                setFirstName('');
-                setLastName('');
-                setEmail('');
-                setPassword('');
+                sessionStorage.setItem(
+                    'email',
+                    json.email
+                );
 
-                // Redirect to home page
-                navigate('/');
+                // Task 3:
+                // Set logged in state
+                setIsLoggedIn(true);
 
-            } else {
-
-                alert(data.message || 'Registration failed');
+                // Task 4:
+                // Navigate to MainPage
+                navigate('/app');
 
             }
 
-        } catch (error) {
+            // Task 5:
+            // Set error message
+            if (json.error) {
 
-            console.error('Error during registration:', error);
+                setShowerr(json.error);
 
-            alert('Something went wrong!');
+            }
+
+        } catch (e) {
+
+            console.log(
+                "Error fetching details: " + e.message
+            );
+
+            setShowerr('Something went wrong');
 
         }
     };
 
     return (
+
         <div className="container mt-5">
 
             <div className="row justify-content-center">
@@ -92,10 +115,19 @@ function RegisterPage() {
                             Register
                         </h2>
 
+                        {/* Task 6:
+                            Display error message */}
+                        <div className="text-danger">
+                            {showerr}
+                        </div>
+
                         {/* First Name */}
                         <div className="mb-3">
 
-                            <label htmlFor="firstName" className="form-label">
+                            <label
+                                htmlFor="firstName"
+                                className="form-label"
+                            >
                                 First Name
                             </label>
 
@@ -105,7 +137,9 @@ function RegisterPage() {
                                 className="form-control"
                                 placeholder="Enter your first name"
                                 value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
+                                onChange={(e) =>
+                                    setFirstName(e.target.value)
+                                }
                             />
 
                         </div>
@@ -113,7 +147,10 @@ function RegisterPage() {
                         {/* Last Name */}
                         <div className="mb-3">
 
-                            <label htmlFor="lastName" className="form-label">
+                            <label
+                                htmlFor="lastName"
+                                className="form-label"
+                            >
                                 Last Name
                             </label>
 
@@ -123,7 +160,9 @@ function RegisterPage() {
                                 className="form-control"
                                 placeholder="Enter your last name"
                                 value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
+                                onChange={(e) =>
+                                    setLastName(e.target.value)
+                                }
                             />
 
                         </div>
@@ -131,7 +170,10 @@ function RegisterPage() {
                         {/* Email */}
                         <div className="mb-3">
 
-                            <label htmlFor="email" className="form-label">
+                            <label
+                                htmlFor="email"
+                                className="form-label"
+                            >
                                 Email
                             </label>
 
@@ -141,7 +183,9 @@ function RegisterPage() {
                                 className="form-control"
                                 placeholder="Enter your email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) =>
+                                    setEmail(e.target.value)
+                                }
                             />
 
                         </div>
@@ -149,7 +193,10 @@ function RegisterPage() {
                         {/* Password */}
                         <div className="mb-4">
 
-                            <label htmlFor="password" className="form-label">
+                            <label
+                                htmlFor="password"
+                                className="form-label"
+                            >
                                 Password
                             </label>
 
@@ -159,7 +206,9 @@ function RegisterPage() {
                                 className="form-control"
                                 placeholder="Enter your password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) =>
+                                    setPassword(e.target.value)
+                                }
                             />
 
                         </div>
@@ -176,7 +225,10 @@ function RegisterPage() {
 
                             Already a member?{' '}
 
-                            <a href="/app/login" className="text-primary">
+                            <a
+                                href="/app/login"
+                                className="text-primary"
+                            >
                                 Login
                             </a>
 
