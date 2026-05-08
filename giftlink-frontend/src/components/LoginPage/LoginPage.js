@@ -12,6 +12,43 @@ function LoginPage() {
         console.log("Inside handleLogin");
         console.log("Email:", email);
         console.log("Password:", password);
+
+        try {
+
+            // Basic auth token
+            const token = btoa(`${email}:${password}`);
+
+            const response = await fetch('http://localhost:3060/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${token}`
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Login successful!');
+                console.log(data);
+
+                // Optional: store token
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                }
+
+            } else {
+                alert(data.message || 'Login failed');
+            }
+
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('Something went wrong!');
+        }
     };
 
     return (
@@ -29,9 +66,10 @@ function LoginPage() {
                             <label htmlFor="email" className="form-label">
                                 Email
                             </label>
+
                             <input
                                 id="email"
-                                type="text"
+                                type="email"
                                 className="form-control"
                                 placeholder="Enter your email"
                                 value={email}
@@ -44,6 +82,7 @@ function LoginPage() {
                             <label htmlFor="password" className="form-label">
                                 Password
                             </label>
+
                             <input
                                 id="password"
                                 type="password"
