@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Task 3
-import { urlConfig } from '../../config'; // Task 1
-import { useAppContext } from '../../context/AuthContext'; // Task 2
+import { useNavigate } from 'react-router-dom';
+import { urlConfig } from '../../config';
+import { useAppContext } from '../../context/AuthContext';
 
 export default function LoginPage() {
 
+    // States
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    // Task 4
     const [incorrect, setIncorrect] = useState('');
 
-    // Task 5
+    // Navigation and Context
     const navigate = useNavigate();
     const bearerToken = sessionStorage.getItem('bearer-token');
     const { setIsLoggedIn } = useAppContext();
 
-    // Task 6
+    // Redirect if already logged in
     useEffect(() => {
         if (sessionStorage.getItem('auth-token')) {
             navigate('/app');
         }
     }, [navigate]);
 
+    // Handle Login Function
     const handleLogin = async () => {
+
         try {
 
-            const response = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
-                
-                // Task 7
+            // API Call
+            const res = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
+
                 method: 'POST',
 
-                // Task 8
                 headers: {
                     'content-type': 'application/json',
                     'Authorization': bearerToken
@@ -39,24 +39,42 @@ export default function LoginPage() {
                         : '',
                 },
 
-                // Task 9
                 body: JSON.stringify({
                     email: email,
                     password: password,
                 }),
             });
 
-            const data = await response.json();
+            // Access JSON data
+            const json = await res.json();
 
-            if (response.ok) {
-                sessionStorage.setItem('auth-token', data.token);
-                sessionStorage.setItem('user', JSON.stringify(data.user));
+            // Successful Login
+            if (json.authtoken) {
 
+                // Store user details
+                sessionStorage.setItem('auth-token', json.authtoken);
+                sessionStorage.setItem('name', json.userName);
+                sessionStorage.setItem('email', json.userEmail);
+
+                // Set logged in state
                 setIsLoggedIn(true);
 
+                // Navigate to MainPage
                 navigate('/app');
+
             } else {
-                setIncorrect('Incorrect email or password');
+
+                // Clear inputs
+                document.getElementById("email").value = "";
+                document.getElementById("password").value = "";
+
+                // Show error message
+                setIncorrect("Wrong password. Try again.");
+
+                // Clear message after 2 seconds
+                setTimeout(() => {
+                    setIncorrect("");
+                }, 2000);
             }
 
         } catch (e) {
@@ -65,28 +83,55 @@ export default function LoginPage() {
     };
 
     return (
-        <div>
-            <h2>Login Page</h2>
+        <div className="container mt-5">
 
-            <input
-                type="email"
-                placeholder="Enter Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
+            <h2 className="mb-4">Login</h2>
 
-            <input
-                type="password"
-                placeholder="Enter Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
+            {/* Email Input */}
+            <div className="mb-3">
+                <input
+                    type="email"
+                    id="email"
+                    className="form-control"
+                    placeholder="Enter Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+            </div>
 
-            <button onClick={handleLogin}>
+            {/* Password Input */}
+            <div className="mb-3">
+                <input
+                    type="password"
+                    id="password"
+                    className="form-control"
+                    placeholder="Enter Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+            </div>
+
+            {/* Error Message */}
+            <span
+                style={{
+                    color: 'red',
+                    height: '.5cm',
+                    display: 'block',
+                    fontStyle: 'italic',
+                    fontSize: '12px'
+                }}
+            >
+                {incorrect}
+            </span>
+
+            {/* Login Button */}
+            <button
+                className="btn btn-primary"
+                onClick={handleLogin}
+            >
                 Login
             </button>
 
-            {incorrect && <p>{incorrect}</p>}
         </div>
     );
 }
